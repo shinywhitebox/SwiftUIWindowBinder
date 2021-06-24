@@ -30,6 +30,7 @@ import AppKit
 public struct WindowBinder<Content> : View where Content : View {
     //// Host window based on presentation of view
     @Binding private var window: Window?
+    @Binding private var delegate: NSWindowDelegate?
 
     /// Content view to expose
     private var content: () -> Content
@@ -41,8 +42,9 @@ public struct WindowBinder<Content> : View where Content : View {
     #endif
 
     ///
-    public init(window: Binding<Window?>, @ViewBuilder content: @escaping () -> Content) {
+    public init(window: Binding<Window?>, delegate: Binding<NSWindowDelegate?> = Binding.constant(nil), @ViewBuilder content: @escaping () -> Content) {
         self._window = window
+        self._delegate = delegate
         self.content = content
     }
 
@@ -51,7 +53,7 @@ public struct WindowBinder<Content> : View where Content : View {
     public var body: some View {
         ZStack(alignment: .center, content: {
             // Add bindindable view to hierachy to tap UIKit/AppKit view hierarchy
-            WindowBindableView(hostWindow: $window)
+            WindowBindableView(hostWindow: $window, delegate: $delegate)
                 .frame(minWidth: 0, idealWidth: 0, maxWidth: 0, minHeight: 0,
                        idealHeight: 0, maxHeight: 0, alignment: .center)
 

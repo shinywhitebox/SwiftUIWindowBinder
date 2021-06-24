@@ -95,6 +95,7 @@ public typealias Window = NSWindow
 final private class WindowBindableViewController: NSViewController {
     /// Binding for view's host window
     @Binding var hostWindow: Window?
+    @Binding var delegate: NSWindowDelegate?
 
     /// No supported
     required init?(coder: NSCoder) {
@@ -105,8 +106,9 @@ final private class WindowBindableViewController: NSViewController {
     ///
     /// Parameters:
     ///     - window: Host window binding
-    init(window: Binding<Window?>) {
+    init(window: Binding<Window?>, delegate: Binding<NSWindowDelegate?>? = nil) {
         _hostWindow = window
+        _delegate = delegate ?? Binding<NSWindowDelegate?>.constant(nil)
 
         super.init(nibName: nil, bundle: Bundle.main)
     }
@@ -129,6 +131,10 @@ final private class WindowBindableViewController: NSViewController {
     override func viewDidAppear() {
         if (hostWindow != view.window) {
             hostWindow = view.window
+            if delegate != nil {
+                NSLog("Setting delegate of \(String(describing: hostWindow)) to be \(String(describing: delegate))")
+            }
+            hostWindow?.delegate = delegate
         }
 
         super.viewDidAppear()
@@ -145,15 +151,17 @@ final private class WindowBindableViewController: NSViewController {
 @available(macOS 10.15, *)
 struct WindowBindableView: NSViewControllerRepresentable {
     @Binding public var hostWindow: Window?
+    @Binding public var delegate: NSWindowDelegate?
 
-    init(hostWindow: Binding<Window?>) {
+    init(hostWindow: Binding<Window?>, delegate: Binding<NSWindowDelegate?>? = nil) {
         _hostWindow = hostWindow
+        _delegate = delegate ?? Binding<NSWindowDelegate?>.constant(nil)
     }
 
     // MARK: UIViewControllerRepresentable
 
     func makeNSViewController(context: Context) -> NSViewController {
-        WindowBindableViewController(window: $hostWindow)
+        WindowBindableViewController(window: $hostWindow, delegate: $delegate)
     }
 
     func updateNSViewController(_ uiViewController: NSViewController, context: Context) { }
